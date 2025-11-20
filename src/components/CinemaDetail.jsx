@@ -3,7 +3,7 @@ import { ArrowLeft, MapPin, Clock3 } from 'lucide-react'
 import { getMoviesForCinema } from '../data/cinemas'
 
 export default function CinemaDetail({ cinema, onBack }) {
-  const movies = getMoviesForCinema(cinema.id)
+  const movies = cinema ? getMoviesForCinema(cinema.id) : []
   return (
     <AnimatePresence mode="wait">
       {cinema && (
