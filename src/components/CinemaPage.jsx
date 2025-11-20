@@ -1,76 +1,9 @@
 import { useMemo, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, MapPin, Building2, ChevronRight } from 'lucide-react'
+import { CHAINS, ALL_CINEMAS } from '../data/cinemas'
 
-const CHAINS = [
-  {
-    id: 'event',
-    name: 'Event Cinemas',
-    gradient: 'from-fuchsia-500 via-pink-500 to-orange-500',
-    glow: 'shadow-[0_0_40px_rgba(236,72,153,0.35)]',
-  },
-  {
-    id: 'hoyts',
-    name: 'HOYTS',
-    gradient: 'from-sky-500 via-blue-500 to-indigo-500',
-    glow: 'shadow-[0_0_40px_rgba(59,130,246,0.35)]',
-  },
-  {
-    id: 'village',
-    name: 'Village Cinemas',
-    gradient: 'from-amber-400 via-orange-500 to-rose-500',
-    glow: 'shadow-[0_0_40px_rgba(251,191,36,0.35)]',
-  },
-  {
-    id: 'palace',
-    name: 'Palace Cinemas',
-    gradient: 'from-emerald-400 via-teal-500 to-cyan-500',
-    glow: 'shadow-[0_0_40px_rgba(16,185,129,0.35)]',
-  },
-  {
-    id: 'dendy',
-    name: 'Dendy Cinemas',
-    gradient: 'from-violet-500 via-purple-500 to-fuchsia-500',
-    glow: 'shadow-[0_0_40px_rgba(139,92,246,0.35)]',
-  },
-  {
-    id: 'reading',
-    name: 'Reading Cinemas',
-    gradient: 'from-red-500 via-rose-500 to-pink-500',
-    glow: 'shadow-[0_0_40px_rgba(244,63,94,0.35)]',
-  },
-]
-
-// Generate 50 demo cinemas distributed across chains
-const SUBURBS = [
-  'Sydney CBD','Parramatta','Chatswood','Bondi','Newtown','Broadway','Castle Hill','Hurstville','Macquarie','Wetherill Park',
-  'Melbourne CBD','South Yarra','Docklands','Carlton','Fitzroy','Brunswick','Richmond','St Kilda','Southbank','Footscray',
-  'Brisbane CBD','South Bank','Chermside','Indooroopilly','Carindale','Garden City','Springfield','Toowong','Logan','North Lakes',
-  'Perth CBD','Joondalup','Cannington','Morley','Fremantle','Rockingham','Mandurah','Karrinyup','Innaloo','Belmont',
-  'Adelaide CBD','Glenelg','Norwood','Marion','Tee Tree Plaza','Prospect','Port Adelaide','Mawson Lakes','Salisbury','Elizabeth',
-]
-
-function buildCinemas() {
-  const cinemas = []
-  let idx = 0
-  for (let i = 0; i < 50; i++) {
-    const chain = CHAINS[i % CHAINS.length]
-    const suburb = SUBURBS[i % SUBURBS.length]
-    cinemas.push({
-      id: `${chain.id}-${i}`,
-      chain: chain.id,
-      name: `${chain.name} ${suburb}`,
-      suburb,
-      address: `${Math.floor(10 + Math.random()*80)} ${suburb} Rd`,
-    })
-    idx++
-  }
-  return cinemas
-}
-
-const ALL_CINEMAS = buildCinemas()
-
-export default function CinemaPage() {
+export default function CinemaPage({ onOpenCinema }) {
   const [activeChain, setActiveChain] = useState(null)
   const [query, setQuery] = useState('')
 
@@ -121,26 +54,30 @@ export default function CinemaPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04, type: 'spring', stiffness: 120, damping: 18 }}
-                className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-5 text-left backdrop-blur-sm transition-all ${active ? 'ring-2 ring-white/60' : 'hover:bg-white/[0.04] hover:border-white/20'} ${active ? chain.glow : ''}`}
+                className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-0 text-left backdrop-blur-sm transition-all ${active ? 'ring-2 ring-white/60' : 'hover:bg-white/[0.04] hover:border-white/20'} ${active ? chain.glow : ''}`}
               >
-                <div className={`absolute inset-0 bg-gradient-to-tr ${chain.gradient} opacity-10 transition-opacity group-hover:opacity-20`} />
-                <div className="relative flex items-center gap-4">
-                  <div className={`h-12 w-12 rounded-xl bg-gradient-to-tr ${chain.gradient} flex items-center justify-center text-white font-black text-lg shadow-lg`}>{chain.name.split(' ')[0][0]}</div>
-                  <div>
-                    <h3 className="text-white font-semibold text-lg">{chain.name}</h3>
-                    <p className="text-slate-300/80 text-sm flex items-center gap-1"><MapPin className="h-4 w-4"/> {ALL_CINEMAS.filter(c=>c.chain===chain.id).length} cinemas</p>
+                {/* Background image with blend overlay */}
+                <div className="relative h-40 md:h-48">
+                  <img src={chain.image} alt="" className="absolute inset-0 h-full w-full object-cover"/>
+                  <div className={`absolute inset-0 mix-blend-overlay bg-gradient-to-tr ${chain.gradient} opacity-70`} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                  <div className="relative z-10 flex h-full items-end p-5">
+                    <div>
+                      <h3 className="text-white font-semibold text-xl drop-shadow">{chain.name}</h3>
+                      <p className="text-slate-200/90 text-sm flex items-center gap-1"><MapPin className="h-4 w-4"/> {ALL_CINEMAS.filter(c=>c.chain===chain.id).length} cinemas</p>
+                    </div>
                   </div>
                 </div>
                 <motion.div
                   initial={false}
                   animate={{ opacity: active ? 1 : 0, y: active ? 0 : -6 }}
-                  className="mt-4 flex items-center justify-between text-slate-200"
+                  className="px-5 pb-4 flex items-center justify-between text-slate-200"
                 >
                   <span className="text-sm/none">View locations</span>
                   <ChevronRight className="h-5 w-5"/>
                 </motion.div>
 
-                {/* Affect other cards when one is active */}
+                {/* Dim other cards when one is active */}
                 <motion.div
                   initial={false}
                   animate={{
@@ -157,16 +94,35 @@ export default function CinemaPage() {
         </motion.div>
 
         {/* Reveal panel */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {activeChain && (
             <motion.div
               key={activeChain}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 30 }}
-              transition={{ type: 'spring', stiffness: 140, damping: 14 }}
-              className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 md:p-6"
+              initial={{ opacity: 0, y: 40, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 140, damping: 16 }}
+              className="mt-8 rounded-3xl border border-white/10 bg-white/[0.05] backdrop-blur-xl p-5 md:p-6"
             >
+              {/* Chain switcher: scrollable pill carousel */}
+              <div className="mb-4 flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+                {CHAINS.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => setActiveChain(c.id)}
+                    className={`shrink-0 rounded-full px-4 py-2 text-sm border transition ${activeChain===c.id ? 'bg-white text-slate-900 border-white' : 'bg-white/5 text-slate-200 border-white/10 hover:bg-white/10'}`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setActiveChain(null)}
+                  className="ml-auto shrink-0 rounded-full px-4 py-2 text-sm border bg-transparent text-slate-300 border-white/10 hover:bg-white/10"
+                >
+                  Clear
+                </button>
+              </div>
+
               <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/>
@@ -184,22 +140,21 @@ export default function CinemaPage() {
                 </div>
                 <div className="flex items-center justify-between md:justify-end gap-3 text-slate-300">
                   <span className="text-sm whitespace-nowrap">{filtered.length} shown</span>
-                  <span className="hidden md:inline text-slate-600">|</span>
-                  <button onClick={()=>setActiveChain(null)} className="text-sm px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition">Close</button>
                 </div>
               </div>
 
               <motion.div layout className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <AnimatePresence>
                   {filtered.map((c) => (
-                    <motion.div
+                    <motion.button
                       key={c.id}
+                      onClick={() => onOpenCinema?.(c)}
                       layout
                       initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ type: 'spring', stiffness: 160, damping: 18 }}
-                      className="group rounded-2xl border border-white/10 bg-slate-900/50 p-4 hover:bg-slate-900/70 transition overflow-hidden"
+                      className="group rounded-2xl border border-white/10 bg-slate-900/50 p-4 hover:bg-slate-900/70 transition overflow-hidden text-left"
                     >
                       <div className="flex items-start gap-3">
                         <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-200">
@@ -210,7 +165,7 @@ export default function CinemaPage() {
                           <p className="text-sm text-slate-400 truncate">{c.address}, {c.suburb}</p>
                         </div>
                       </div>
-                    </motion.div>
+                    </motion.button>
                   ))}
                 </AnimatePresence>
               </motion.div>
